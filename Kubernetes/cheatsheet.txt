@@ -1,0 +1,8 @@
+# start minikube
+minikube start --vm-driver=hyperv --v 9
+
+# apply a deployment
+kubectl apply -f deployment.yaml
+
+# cluster info
+kubectl cluster-info

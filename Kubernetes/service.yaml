@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: pod-docker-service
+spec:
+  selector:
+    app: pod-docker
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 9376

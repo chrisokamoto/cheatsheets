@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: pod-docker-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: pod-docker
+  template:
+    metadata:
+      labels:
+        app: pod-docker
+    spec:
+      containers:
+      - name: pod-docker-app
+        image: chrisokam/ruby-sinatra-webserver        
+        ports:
+        - containerPort: 80
