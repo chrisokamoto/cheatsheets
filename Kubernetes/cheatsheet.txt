@@ -6,3 +6,109 @@ kubectl apply -f deployment.yaml
 
 # cluster info
 kubectl cluster-info
+
+kc create -f kubernetes/gem-updater/deployment.yml
+kc create -f docker/ops-cron/kubernetes/gem-updater.yml
+
+* * * * * ../gapfish/bin/kubectl create pod -f ../gapfish/kubernetes/gem_updater.yml >> /var/log/cron.log
+
+docker run -it ops-cron
+
+-> in other terminal
+docker ps
+docker exec -it small_poitras /bin/bash
+
+
+- when update a Dockerfile and dont want to use it locally:
+docker push gapfish/ops-cron:gem-updater (tag)
+- then:
+  kc delete -f kubernetes/ops/cron/deploy.yml
+  kc create -f kubernetes/ops/cron/deploy.yml
+
+
+ktop
+ktop -o wide -l app=gapfish-login
+kc apply -f /home/christiane/Documents/Gapfish/gapfish/kubernetes/ops/cron/deploy.yml
+
+
+docker build and run (with tags):
+- docker build -t gapfish/ops-cron:[tag] docker/ops-cron/
+- docker build -t gapfish/ops-cron:gem-updater docker/ops-cron/ --> caminho para o Dockerfile
+- docker run -it gapfish/ops-cron:gem-updater == kubectl attach -t gem-updater
+- kc run gem-updater --image=gapfish/ops-cron:gem-updater0 --> creates deployment gem-updater
+- kc run -it gapfish/ops-cron:gem-updater0
+
+
+- access pod in kubernetes
+kconsole pod=ops-cron
+
+
+- check logs inside kubernetes:
+/gapfish/bin/kubectl logs gem-updater
+
+
+kc get deployment gem-updater -o yaml
+kc describe deployment gem-updater
+
+docker build and push after cron/deploy.yml edit
+
+
+Steps:
+- docker build -t gapfish/ops-cron:gem-updater-with-secrets3 docker/ops-cron/ --no-cache=true - change version of tag in deploy.yml
+- docker push gapfish/ops-cron:gem-updater-with-secrets3
+- kc delete -f kubernetes/ops/cron/deploy.yml
+- kc create -f kubernetes/ops/cron/deploy.yml
+- kc apply -f /home/christiane/Documents/Gapfish/gapfish/kubernetes/ops/cron/deploy.yml
+- check in kconsole pod=ops-cron
+- kc delete deployment gem-updater
+- kc run gem-updater --image=gapfish/ops-cron:gem-updater-with-secrets4
+
+
+## SECRETS ##
+- kc get secrets
+- kc create -f docker/ops-cron/kubernetes/github_token_secret.yml
+
+## COPY FILE TO CONTAINER ##
+- kc cp docker/ops-cron/kubernetes/gem-updater.yml ops-cron-2751673219-p4n2r:/kubernetes/gem-updater.yml
+
+## COPY CONFIG FILE FROM K8S TO DEFAULT
+- cp ./credentials/kubeconfig ~/.kube/config
+
+## ACCESS STAGING CONSOLE
+- kubectl exec -it operations-web-716386275-hjbg6 -- /bin/bash
+
+kubectl top pods --> check memory usage
+kubectl get secret operations-secret -o "jsonpath={.data.secret\.yml}" | base64 -d > ../gapfish/config/secret.yml --> download the secret
+kubectl cp operations-web-69ddb4f7c4-qzxtz:/operations/dump.sql ./dump.sql
+
+## SEE LOGS OF UNICORN
+- kubectl logs operations-web-76bd9d6794-tp5bf unicorn -f
+
+## OTHER NAMESPACES
+kubectl get pods --all-namespaces
+kubectl describe pod mongo-0 --namespace=gapfish-system
+
+## create redis-sentinel service
+kubectl expose service redis-sentinel ?
+kubectl expose deployment/redis-sentinel ?
+
+## check services and endpoints
+kubectl get endpoints
+kubectl get services
+
+## SEE PODS WITH IPS
+kubectl get pods -o wide
+
+## TROUBLESHOOTING
+if we have timeouts without logs on operations and the system doesnt load at all: check if the labels of the service traefik are ok. 
+- kubectl -n gapfish-system edit service traefik
+selector:
+    app: traefik
+    env: staging
+
+## upgrade kubernetes
+- in production, before upgrading mongo pods, drain each separately and wait to complete
+	bin/kc drain no/gke-....<mongo-0> --ignore-daemonsets --force
+
+## COPY FILES FROM K8S TO LOCAL MACHINE
+kubectl cp operations-web-bfff6884f-7jw9m:/operations/user_ids.txt /
