@@ -112,3 +112,9 @@ selector:
 
 ## COPY FILES FROM K8S TO LOCAL MACHINE
 kubectl cp operations-web-bfff6884f-7jw9m:/operations/user_ids.txt /
+
+## print all logs from deployment pods
+ktail app=deployer
+
+## assing a ServiceAccount to a deployment/pod/whatever
+k set serviceaccount deployment deployer deployer
