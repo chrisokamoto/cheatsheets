@@ -1,4 +1,5 @@
-docker build -t friendlyhello .  # Create image using this directory's Dockerfile
+3docker build -t friendlyhello .  # Create image using this directory's Dockerfile
+docker build -f path_to_dockerfile . # give the ADD/COPY command access to anything in your current directory.
 docker run -p 4000:80 friendlyhello  # Run "friendlyname" mapping port 4000 to 80
 docker run -d -p 4000:80 friendlyhello         # Same thing, but in detached mode
 docker container ls                                # List all running containers
